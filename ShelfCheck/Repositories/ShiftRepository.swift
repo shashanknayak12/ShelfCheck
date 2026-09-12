@@ -15,4 +15,5 @@ import Foundation
 protocol ShiftRepository {
     func shift(withID shiftID: UUID) -> Shift?
     func allShifts() -> [Shift]
+    func save(_ shift: Shift)
 }
