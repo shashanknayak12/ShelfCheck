@@ -19,4 +19,15 @@ struct Shift: Identifiable, Hashable {
 
     var id: UUID { shiftID }
     var isActive: Bool { endedAt == nil }
+
+    /// Morning / Afternoon / Night how staff actually refer to shifts on
+    /// the roster, based on when the shift started.
+    var timeOfDaySlot: String {
+        let hour = Calendar.current.component(.hour, from: startedAt)
+        switch hour {
+        case 5..<12: return "Morning"
+        case 12..<17: return "Afternoon"
+        default: return "Night"
+        }
+    }
 }
