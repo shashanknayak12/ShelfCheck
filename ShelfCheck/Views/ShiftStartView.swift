@@ -7,11 +7,23 @@
 
 import SwiftUI
  
+
 struct ShiftStartView: View {
     @StateObject private var viewModel: ShiftStartViewModel
+    let logExpiryCheckUseCase: LogExpiryCheckUseCase
+    let reviewShiftComplianceUseCase: ReviewShiftComplianceUseCase
+    let submitHandoverNoteUseCase: SubmitHandoverNoteUseCase
 
-    init(viewModel: ShiftStartViewModel) {
+    init(
+        viewModel: ShiftStartViewModel,
+        logExpiryCheckUseCase: LogExpiryCheckUseCase,
+        reviewShiftComplianceUseCase: ReviewShiftComplianceUseCase,
+        submitHandoverNoteUseCase: SubmitHandoverNoteUseCase
+    ) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        self.logExpiryCheckUseCase = logExpiryCheckUseCase
+        self.reviewShiftComplianceUseCase = reviewShiftComplianceUseCase
+        self.submitHandoverNoteUseCase = submitHandoverNoteUseCase
     }
 
     var body: some View {
@@ -33,6 +45,23 @@ struct ShiftStartView: View {
 
                     ForEach(ProductCategory.allCases.filter { viewModel.outstandingCategories.contains($0) }) { category in
                         Label(category.rawValue, systemImage: "circle")
+                    }
+                }
+
+                Section("Actions") {
+                    NavigationLink("Open Checklist") {
+                        ChecklistView(viewModel: ChecklistViewModel(
+                            logExpiryCheckUseCase: logExpiryCheckUseCase,
+                            reviewShiftComplianceUseCase: reviewShiftComplianceUseCase,
+                            session: viewModel.session
+                        ))
+                    }
+
+                    NavigationLink("Write Handover Note") {
+                        HandoverView(viewModel: HandoverViewModel(
+                            submitHandoverNoteUseCase: submitHandoverNoteUseCase,
+                            session: viewModel.session
+                        ))
                     }
                 }
             }
@@ -67,15 +96,23 @@ struct ShiftStartView: View {
 
 #Preview {
     let store = InMemoryShelfCheckStore()
+    let logExpiryCheckUseCase = LogExpiryCheckUseCase(checkRepository: store)
+    let reviewShiftComplianceUseCase = ReviewShiftComplianceUseCase(checkRepository: store, shiftRepository: store)
+    let submitHandoverNoteUseCase = SubmitHandoverNoteUseCase(noteRepository: store, shiftRepository: store)
     let viewModel = ShiftStartViewModel(
         staffRepository: store,
         shiftRepository: store,
         noteRepository: store,
-        logExpiryCheckUseCase: LogExpiryCheckUseCase(checkRepository: store),
-        reviewShiftComplianceUseCase: ReviewShiftComplianceUseCase(checkRepository: store, shiftRepository: store),
+        logExpiryCheckUseCase: logExpiryCheckUseCase,
+        reviewShiftComplianceUseCase: reviewShiftComplianceUseCase,
         session: ShiftSession(shiftRepository: store)
     )
     return NavigationStack {
-        ShiftStartView(viewModel: viewModel)
+        ShiftStartView(
+            viewModel: viewModel,
+            logExpiryCheckUseCase: logExpiryCheckUseCase,
+            reviewShiftComplianceUseCase: reviewShiftComplianceUseCase,
+            submitHandoverNoteUseCase: submitHandoverNoteUseCase
+        )
     }
 }
