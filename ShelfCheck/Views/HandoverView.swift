@@ -17,24 +17,40 @@ struct HandoverView: View {
     var body: some View {
         Form {
             Section("Handover Note") {
-                TextEditor(text: $viewModel.message)
-                    .frame(minHeight: 100)
+                ZStack(alignment: .topLeading) {
+                    if viewModel.message.isEmpty {
+                        Text("e.g. \"Didn't get to gum section, please check first thing\"")
+                            .foregroundStyle(.tertiary)
+                            .padding(.top, 8)
+                            .padding(.leading, 4)
+                    }
+                    TextEditor(text: $viewModel.message)
+                        .frame(minHeight: 100)
+                }
             }
 
             Section("Flag a section (optional)") {
-                Picker("Section", selection: $viewModel.flaggedCategory) {
+                Picker(selection: $viewModel.flaggedCategory) {
                     Text("None").tag(ProductCategory?.none)
                     ForEach(ProductCategory.allCases) { category in
-                        Text(category.rawValue).tag(ProductCategory?.some(category))
+                        Label(category.rawValue, systemImage: category.iconName)
+                            .tag(ProductCategory?.some(category))
                     }
+                } label: {
+                    Label("Section", systemImage: "tag.fill")
                 }
             }
 
             Section {
-                Button("Send to Next Shift") {
+                Button {
                     viewModel.submit()
+                } label: {
+                    Label("Send to Next Shift", systemImage: "paperplane.fill")
+                        .frame(maxWidth: .infinity)
                 }
+                .buttonStyle(.borderedProminent)
             }
+            .listRowBackground(Color.clear)
         }
         .navigationTitle("Handover")
         .alert("Couldn't send note", isPresented: Binding(

@@ -45,13 +45,15 @@ struct ContentView: View {
             }
 
             NavigationStack {
-                ManagerDashboardView(
-                    viewModel: ManagerDashboardViewModel(
-                        reviewShiftComplianceUseCase: reviewShiftComplianceUseCase
-                    ),
-                    checkRepository: store,
-                    noteRepository: store
-                )
+                ManagerAccessView {
+                    ManagerDashboardView(
+                        viewModel: ManagerDashboardViewModel(
+                            reviewShiftComplianceUseCase: reviewShiftComplianceUseCase
+                        ),
+                        checkRepository: store,
+                        noteRepository: store
+                    )
+                }
             }
             .tabItem {
                 Label("Manager", systemImage: "chart.bar")

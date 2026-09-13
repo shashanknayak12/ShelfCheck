@@ -31,19 +31,30 @@ struct ManagerDashboardView: View {
                     noteRepository: noteRepository
                 ))
             } label: {
-                HStack {
-                    VStack(alignment: .leading) {
+                HStack(spacing: 12) {
+                    Image(systemName: slotIcon(for: report.shift.timeOfDaySlot))
+                        .font(.title3)
+                        .foregroundStyle(.blue)
+                        .frame(width: 36, height: 36)
+                        .background(Color.blue.opacity(0.12))
+                        .clipShape(Circle())
+
+                    VStack(alignment: .leading, spacing: 2) {
                         Text("\(report.shift.timeOfDaySlot) shift")
                             .font(.headline)
                         Text(report.shift.staff.name)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
+
                     Spacer()
-                    statusLabel(for: report.status)
+
+                    StatusBadge(status: report.status)
                 }
+                .padding(.vertical, 4)
             }
         }
+        .listStyle(.insetGrouped)
         .navigationTitle("Shift Status")
         .onAppear {
             viewModel.refresh()
@@ -53,18 +64,11 @@ struct ManagerDashboardView: View {
         }
     }
 
-    @ViewBuilder
-    private func statusLabel(for status: ShiftComplianceStatus) -> some View {
-        switch status {
-        case .complete:
-            Label("Done", systemImage: "checkmark.circle.fill")
-                .foregroundStyle(.green)
-        case .inProgress:
-            Label("In progress", systemImage: "clock.fill")
-                .foregroundStyle(.orange)
-        case .missed:
-            Label("Missed", systemImage: "xmark.circle.fill")
-                .foregroundStyle(.red)
+    private func slotIcon(for slot: String) -> String {
+        switch slot {
+        case "Morning": return "sun.max.fill"
+        case "Afternoon": return "sun.haze.fill"
+        default: return "moon.stars.fill"
         }
     }
 }
