@@ -47,7 +47,7 @@ final class ShiftStartViewModel: ObservableObject {
 
         availableStaff = staffRepository.allStaff()
         overdueWarnings = logExpiryCheckUseCase.overdueCategories()
-        loadIncomingNotes()
+        refreshIncomingNotes()
     }
 
     /// this is called when a staff member taps their name on the picker.
@@ -57,7 +57,9 @@ final class ShiftStartViewModel: ObservableObject {
     }
 
     /// Notes left by whoever was on the most recent shift that's ended.
-    private func loadIncomingNotes() {
+    /// Called again whenever a shift ends, so the next person to sign in
+    /// sees the note that was just written, not a stale one from launch.
+    func refreshIncomingNotes() {
         let mostRecentEndedShift = shiftRepository.allShifts()
             .filter { $0.endedAt != nil }
             .max { ($0.endedAt ?? .distantPast) < ($1.endedAt ?? .distantPast) }

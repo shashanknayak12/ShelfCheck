@@ -7,16 +7,30 @@
 
 import SwiftUI
  
+
 struct ShiftStartView: View {
     @StateObject private var viewModel: ShiftStartViewModel
+    @ObservedObject private var session: ShiftSession
+    let logExpiryCheckUseCase: LogExpiryCheckUseCase
+    let reviewShiftComplianceUseCase: ReviewShiftComplianceUseCase
+    let submitHandoverNoteUseCase: SubmitHandoverNoteUseCase
 
-    init(viewModel: ShiftStartViewModel) {
+    init(
+        viewModel: ShiftStartViewModel,
+        logExpiryCheckUseCase: LogExpiryCheckUseCase,
+        reviewShiftComplianceUseCase: ReviewShiftComplianceUseCase,
+        submitHandoverNoteUseCase: SubmitHandoverNoteUseCase
+    ) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        _session = ObservedObject(wrappedValue: viewModel.session)
+        self.logExpiryCheckUseCase = logExpiryCheckUseCase
+        self.reviewShiftComplianceUseCase = reviewShiftComplianceUseCase
+        self.submitHandoverNoteUseCase = submitHandoverNoteUseCase
     }
 
     var body: some View {
         List {
-            if viewModel.session.currentStaff == nil {
+            if session.currentStaff == nil {
                 Section("Who's on shift?") {
                     ForEach(viewModel.availableStaff) { staff in
                         Button(staff.name) {
@@ -26,13 +40,35 @@ struct ShiftStartView: View {
                 }
             } else {
                 Section("Today's progress") {
-                    Text("Signed in as \(viewModel.session.currentStaff?.name ?? "")")
+                    Text("Signed in as \(session.currentStaff?.name ?? "")")
                         .font(.headline)
                     Text("\(viewModel.checkedCategories.count) of \(ProductCategory.allCases.count) sections checked")
                         .foregroundStyle(.secondary)
 
                     ForEach(ProductCategory.allCases.filter { viewModel.outstandingCategories.contains($0) }) { category in
                         Label(category.rawValue, systemImage: "circle")
+                    }
+                }
+
+                Section("Actions") {
+                    NavigationLink("Open Checklist") {
+                        ChecklistView(viewModel: ChecklistViewModel(
+                            logExpiryCheckUseCase: logExpiryCheckUseCase,
+                            reviewShiftComplianceUseCase: reviewShiftComplianceUseCase,
+                            session: session
+                        ))
+                    }
+
+                    NavigationLink("Write Handover Note") {
+                        HandoverView(viewModel: HandoverViewModel(
+                            submitHandoverNoteUseCase: submitHandoverNoteUseCase,
+                            session: session
+                        ))
+                    }
+
+                    Button("End Shift", role: .destructive) {
+                        session.endShift()
+                        viewModel.refreshIncomingNotes()
                     }
                 }
             }
@@ -67,15 +103,23 @@ struct ShiftStartView: View {
 
 #Preview {
     let store = InMemoryShelfCheckStore()
+    let logExpiryCheckUseCase = LogExpiryCheckUseCase(checkRepository: store)
+    let reviewShiftComplianceUseCase = ReviewShiftComplianceUseCase(checkRepository: store, shiftRepository: store)
+    let submitHandoverNoteUseCase = SubmitHandoverNoteUseCase(noteRepository: store, shiftRepository: store)
     let viewModel = ShiftStartViewModel(
         staffRepository: store,
         shiftRepository: store,
         noteRepository: store,
-        logExpiryCheckUseCase: LogExpiryCheckUseCase(checkRepository: store),
-        reviewShiftComplianceUseCase: ReviewShiftComplianceUseCase(checkRepository: store, shiftRepository: store),
+        logExpiryCheckUseCase: logExpiryCheckUseCase,
+        reviewShiftComplianceUseCase: reviewShiftComplianceUseCase,
         session: ShiftSession(shiftRepository: store)
     )
     return NavigationStack {
-        ShiftStartView(viewModel: viewModel)
+        ShiftStartView(
+            viewModel: viewModel,
+            logExpiryCheckUseCase: logExpiryCheckUseCase,
+            reviewShiftComplianceUseCase: reviewShiftComplianceUseCase,
+            submitHandoverNoteUseCase: submitHandoverNoteUseCase
+        )
     }
 }
