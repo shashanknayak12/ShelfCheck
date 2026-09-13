@@ -54,7 +54,7 @@ final class InMemoryShelfCheckStore: StaffRepository, ShiftRepository, ExpiryChe
                 noteID: UUID(),
                 fromShiftID: previousShift.shiftID,
                 authoredBy: sam,
-                message: "Didn't get to chocolate and gum sections tonight — please check first thing, found expired stock there last week.",
+                message: "Ran out of time for chocolate and gum tonight, sorry! Can someone check them first thing, found a few expired ones in there last week.",
                 flaggedCategory: .chocolate,
                 createdAt: previousShiftEnd
             )
