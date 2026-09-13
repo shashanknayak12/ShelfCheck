@@ -23,7 +23,11 @@ struct ShiftDetailView: View {
                 if let endedAt = viewModel.report.shift.endedAt {
                     LabeledContent("Ended", value: endedAt.formatted(date: .abbreviated, time: .shortened))
                 }
-                statusRow
+                HStack {
+                    Text("Status")
+                    Spacer()
+                    StatusBadge(status: viewModel.report.status)
+                }
             }
 
             Section("Checked (\(viewModel.checks.count))") {
@@ -32,11 +36,15 @@ struct ShiftDetailView: View {
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(viewModel.checks) { check in
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(check.productCategory.rawValue)
-                            Text("\(check.expiryStatus.rawValue), \(check.checkedAt.formatted(date: .omitted, time: .shortened))")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                        HStack(spacing: 12) {
+                            Image(systemName: check.expiryStatus.iconName)
+                                .foregroundStyle(check.expiryStatus.tintColor)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(check.productCategory.rawValue)
+                                Text("\(check.expiryStatus.rawValue) · \(check.checkedAt.formatted(date: .omitted, time: .shortened))")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                     }
                 }
@@ -45,7 +53,8 @@ struct ShiftDetailView: View {
             if !viewModel.report.outstandingCategories.isEmpty {
                 Section("Outstanding") {
                     ForEach(ProductCategory.allCases.filter { viewModel.report.outstandingCategories.contains($0) }) { category in
-                        Text(category.rawValue)
+                        Label(category.rawValue, systemImage: category.iconName)
+                            .foregroundStyle(.secondary)
                     }
                 }
             }
@@ -66,21 +75,6 @@ struct ShiftDetailView: View {
             }
         }
         .navigationTitle("\(viewModel.report.shift.timeOfDaySlot) Shift")
-    }
-
-    @ViewBuilder
-    private var statusRow: some View {
-        switch viewModel.report.status {
-        case .complete:
-            Label("Done", systemImage: "checkmark.circle.fill")
-                .foregroundStyle(.green)
-        case .inProgress:
-            Label("In progress", systemImage: "clock.fill")
-                .foregroundStyle(.orange)
-        case .missed:
-            Label("Missed", systemImage: "xmark.circle.fill")
-                .foregroundStyle(.red)
-        }
     }
 }
 

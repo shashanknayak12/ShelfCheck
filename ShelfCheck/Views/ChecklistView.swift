@@ -24,25 +24,42 @@ struct ChecklistView: View {
                     Button {
                         categoryPendingStatus = category
                     } label: {
-                        HStack {
+                        HStack(spacing: 12) {
+                            Image(systemName: category.iconName)
+                                .font(.body)
+                                .foregroundStyle(isChecked ? .green : .blue)
+                                .frame(width: 32, height: 32)
+                                .background((isChecked ? Color.green : Color.blue).opacity(0.12))
+                                .clipShape(Circle())
+
                             Text(category.rawValue)
+
                             Spacer()
+
                             if isChecked {
                                 Image(systemName: "checkmark.circle.fill")
                                     .foregroundStyle(.green)
+                            } else {
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
                             }
                         }
+                        .padding(.vertical, 4)
                     }
                     .disabled(isChecked)
                 }
             }
 
             Section {
-                Button("Scan Item") {
+                Button {
                     showScanUnavailable = true
+                } label: {
+                    Label("Scan Item", systemImage: "barcode.viewfinder")
                 }
             }
         }
+        .listStyle(.insetGrouped)
         .navigationTitle("Checklist")
         .confirmationDialog(
             "What did you find?",
