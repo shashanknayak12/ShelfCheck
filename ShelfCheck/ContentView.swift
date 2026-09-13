@@ -48,7 +48,9 @@ struct ContentView: View {
                 ManagerDashboardView(
                     viewModel: ManagerDashboardViewModel(
                         reviewShiftComplianceUseCase: reviewShiftComplianceUseCase
-                    )
+                    ),
+                    checkRepository: store,
+                    noteRepository: store
                 )
             }
             .tabItem {

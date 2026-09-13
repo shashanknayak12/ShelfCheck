@@ -9,26 +9,45 @@ import SwiftUI
 
 struct ManagerDashboardView: View {
     @StateObject private var viewModel: ManagerDashboardViewModel
+    let checkRepository: ExpiryCheckRepository
+    let noteRepository: HandoverNoteRepository
 
-    init(viewModel: ManagerDashboardViewModel) {
+    init(
+        viewModel: ManagerDashboardViewModel,
+        checkRepository: ExpiryCheckRepository,
+        noteRepository: HandoverNoteRepository
+    ) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        self.checkRepository = checkRepository
+        self.noteRepository = noteRepository
     }
 
     var body: some View {
         List(viewModel.reports, id: \.shift.shiftID) { report in
-            HStack {
-                VStack(alignment: .leading) {
-                    Text("\(report.shift.timeOfDaySlot) shift")
-                        .font(.headline)
-                    Text(report.shift.staff.name)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+            NavigationLink {
+                ShiftDetailView(viewModel: ShiftDetailViewModel(
+                    report: report,
+                    checkRepository: checkRepository,
+                    noteRepository: noteRepository
+                ))
+            } label: {
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text("\(report.shift.timeOfDaySlot) shift")
+                            .font(.headline)
+                        Text(report.shift.staff.name)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    statusLabel(for: report.status)
                 }
-                Spacer()
-                statusLabel(for: report.status)
             }
         }
         .navigationTitle("Shift Status")
+        .onAppear {
+            viewModel.refresh()
+        }
         .refreshable {
             viewModel.refresh()
         }
@@ -56,6 +75,6 @@ struct ManagerDashboardView: View {
         reviewShiftComplianceUseCase: ReviewShiftComplianceUseCase(checkRepository: store, shiftRepository: store)
     )
     return NavigationStack {
-        ManagerDashboardView(viewModel: viewModel)
+        ManagerDashboardView(viewModel: viewModel, checkRepository: store, noteRepository: store)
     }
 }
