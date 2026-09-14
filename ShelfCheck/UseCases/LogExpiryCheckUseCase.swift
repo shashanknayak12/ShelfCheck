@@ -9,7 +9,7 @@ import Foundation
 
 /// Failure states for logging an expiry check, written for the staff member
 
-enum ExpiryCheckError: LocalizedError {
+enum ExpiryCheckError: LocalizedError, Equatable {
     case checkAlreadyLoggedToday(category: String)
     case categoryOverdue(category: String, hoursOverdue: Int)
 
