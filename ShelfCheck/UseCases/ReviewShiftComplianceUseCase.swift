@@ -8,7 +8,7 @@
 import Foundation
 
 /// Failure state for reviewing a shift that has not logged anything yet.
-enum ComplianceReviewError: LocalizedError {
+enum ComplianceReviewError: LocalizedError, Equatable {
     case noDataForShift(shiftName: String)
 
     var errorDescription: String? {
@@ -21,7 +21,7 @@ enum ComplianceReviewError: LocalizedError {
 
 /// Whether a shift finished what it was supposed to the same "done / in
 /// progress / missed" status a manager would use walking past the roster.
-enum ShiftComplianceStatus {
+enum ShiftComplianceStatus: Equatable {
     case complete
     case inProgress
     case missed

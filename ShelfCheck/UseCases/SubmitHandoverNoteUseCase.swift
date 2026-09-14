@@ -9,7 +9,7 @@ import Foundation
 
 /// Failure states for submitting a handover note, written for the staff
 /// member writing it
-enum HandoverNoteError: LocalizedError {
+enum HandoverNoteError: LocalizedError, Equatable {
     case emptyNoteMessage
     case invalidShiftReference
 
