@@ -34,18 +34,24 @@ final class InMemoryShelfCheckStore: StaffRepository, ShiftRepository, ExpiryChe
         let previousShift = Shift(shiftID: UUID(), staff: sam, startedAt: previousShiftStart, endedAt: previousShiftEnd)
         shifts = [previousShift]
 
+        let farExpiryDate = calendar.date(byAdding: .day, value: 10, to: Date()) ?? Date()
+        let nearExpiryDate = calendar.date(byAdding: .day, value: 2, to: Date()) ?? Date()
+
         checks = [
             ExpiryCheckRecord(
                 checkID: UUID(), shiftID: previousShift.shiftID, productCategory: .dairy,
-                checkedBy: sam, checkedAt: previousShiftStart.addingTimeInterval(600), expiryStatus: .fresh
+                checkedBy: sam, checkedAt: previousShiftStart.addingTimeInterval(600),
+                expiryDate: farExpiryDate, expiryStatus: .fresh, itemNote: nil
             ),
             ExpiryCheckRecord(
                 checkID: UUID(), shiftID: previousShift.shiftID, productCategory: .hotFood,
-                checkedBy: sam, checkedAt: previousShiftStart.addingTimeInterval(1200), expiryStatus: .fresh
+                checkedBy: sam, checkedAt: previousShiftStart.addingTimeInterval(1200),
+                expiryDate: farExpiryDate, expiryStatus: .fresh, itemNote: nil
             ),
             ExpiryCheckRecord(
                 checkID: UUID(), shiftID: previousShift.shiftID, productCategory: .drinks,
-                checkedBy: sam, checkedAt: previousShiftStart.addingTimeInterval(1800), expiryStatus: .nearExpiry
+                checkedBy: sam, checkedAt: previousShiftStart.addingTimeInterval(1800),
+                expiryDate: nearExpiryDate, expiryStatus: .nearExpiry, itemNote: "Coke 600ml, near the back of the fridge"
             )
         ]
 

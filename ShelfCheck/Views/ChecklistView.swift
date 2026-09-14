@@ -9,7 +9,9 @@ import SwiftUI
 
 struct ChecklistView: View {
     @StateObject private var viewModel: ChecklistViewModel
-    @State private var categoryPendingStatus: ProductCategory?
+    @State private var categoryPendingDate: ProductCategory?
+    @State private var selectedExpiryDate = Date()
+    @State private var itemNoteText = ""
     @State private var showScanUnavailable = false
 
     init(viewModel: ChecklistViewModel) {
@@ -22,7 +24,9 @@ struct ChecklistView: View {
                 ForEach(ProductCategory.allCases) { category in
                     let isChecked = viewModel.checkedCategories.contains(category)
                     Button {
-                        categoryPendingStatus = category
+                        selectedExpiryDate = Date()
+                        itemNoteText = ""
+                        categoryPendingDate = category
                     } label: {
                         HStack(spacing: 12) {
                             Image(systemName: category.iconName)
@@ -61,20 +65,36 @@ struct ChecklistView: View {
         }
         .listStyle(.insetGrouped)
         .navigationTitle("Checklist")
-        .confirmationDialog(
-            "What did you find?",
-            isPresented: Binding(
-                get: { categoryPendingStatus != nil },
-                set: { if !$0 { categoryPendingStatus = nil } }
-            ),
-            presenting: categoryPendingStatus
-        ) { category in
-            ForEach(ExpiryStatus.allCases) { status in
-                Button(status.rawValue) {
-                    viewModel.logCheck(category: category, status: status)
-                    categoryPendingStatus = nil
+        .sheet(item: $categoryPendingDate) { category in
+            NavigationStack {
+                Form {
+                    DatePicker(
+                        "Expiry date",
+                        selection: $selectedExpiryDate,
+                        displayedComponents: .date
+                    )
+                    .datePickerStyle(.graphical)
+
+                    Section("Item (optional)") {
+                        TextField("e.g. Mars 46g", text: $itemNoteText)
+                    }
+                }
+                .navigationTitle(category.rawValue)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") {
+                            categoryPendingDate = nil
+                        }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Log Check") {
+                            viewModel.logCheck(category: category, expiryDate: selectedExpiryDate, itemNote: itemNoteText)
+                            categoryPendingDate = nil
+                        }
+                    }
                 }
             }
+            .presentationDetents([.medium, .large])
         }
         .alert("Couldn't log check", isPresented: Binding(
             get: { viewModel.errorMessage != nil },

@@ -21,7 +21,9 @@ struct ExpiryCheckRecord: Identifiable {
     let productCategory: ProductCategory
     let checkedBy: StaffIdentifier
     let checkedAt: Date
+    let expiryDate: Date
     let expiryStatus: ExpiryStatus
+    let itemNote: String?
 
     var id: UUID { checkID }
 }
