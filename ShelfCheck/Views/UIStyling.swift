@@ -67,6 +67,19 @@ extension ShiftComplianceStatus {
     }
 }
 
+extension ExpiryCheckRecord {
+    /// A short line describing when this item expires, worded differently
+   
+    var expiryDateSummary: String {
+        let dateText = expiryDate.formatted(date: .abbreviated, time: .omitted)
+        switch expiryStatus {
+        case .expired: return "Expired on \(dateText)"
+        case .nearExpiry: return "Will expire on \(dateText)"
+        case .fresh: return "Expires on \(dateText)"
+        }
+    }
+}
+
 /// A small colored pill used to show a status at a glance, e.g. "Done" in
 /// green or "Missed" in red, reused on the Manager Dashboard and the
 /// shift detail screen.

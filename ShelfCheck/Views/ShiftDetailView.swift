@@ -41,9 +41,15 @@ struct ShiftDetailView: View {
                                 .foregroundStyle(check.expiryStatus.tintColor)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(check.productCategory.rawValue)
-                                Text("\(check.expiryStatus.rawValue) · \(check.checkedAt.formatted(date: .omitted, time: .shortened))")
+                                Text(check.expiryDateSummary)
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
+                                if let itemNote = check.itemNote {
+                                    Text(itemNote)
+                                        .font(.caption)
+                                        .italic()
+                                        .foregroundStyle(.secondary)
+                                }
                             }
                         }
                     }

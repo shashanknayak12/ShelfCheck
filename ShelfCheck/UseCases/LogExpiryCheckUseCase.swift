@@ -33,10 +33,16 @@ enum ExpiryCheckError: LocalizedError {
 struct LogExpiryCheckUseCase {
     private let checkRepository: ExpiryCheckRepository
     private let overdueThresholdHours: Int
+    private let nearExpiryWarningDays: Int
 
-    init(checkRepository: ExpiryCheckRepository, overdueThresholdHours: Int = 24) {
+    init(
+        checkRepository: ExpiryCheckRepository,
+        overdueThresholdHours: Int = 24,
+        nearExpiryWarningDays: Int = 3
+    ) {
         self.checkRepository = checkRepository
         self.overdueThresholdHours = overdueThresholdHours
+        self.nearExpiryWarningDays = nearExpiryWarningDays
     }
 
     @discardableResult
@@ -44,7 +50,8 @@ struct LogExpiryCheckUseCase {
         category: ProductCategory,
         shiftID: UUID,
         checkedBy: StaffIdentifier,
-        expiryStatus: ExpiryStatus,
+        expiryDate: Date,
+        itemNote: String? = nil,
         checkedAt: Date = Date()
     ) throws -> ExpiryCheckRecord {
         let alreadyLoggedThisShift = checkRepository
@@ -55,16 +62,37 @@ struct LogExpiryCheckUseCase {
             throw ExpiryCheckError.checkAlreadyLoggedToday(category: category.rawValue)
         }
 
+        let trimmedNote = itemNote?.trimmingCharacters(in: .whitespacesAndNewlines)
+
         let record = ExpiryCheckRecord(
             checkID: UUID(),
             shiftID: shiftID,
             productCategory: category,
             checkedBy: checkedBy,
             checkedAt: checkedAt,
-            expiryStatus: expiryStatus
+            expiryDate: expiryDate,
+            expiryStatus: classifyExpiryStatus(expiryDate: expiryDate, asOf: checkedAt),
+            itemNote: (trimmedNote?.isEmpty ?? true) ? nil : trimmedNote
         )
         checkRepository.save(record)
         return record
+    }
+
+    /// Works out fresh vs near expiry vs expired straight from the date
+    /// printed on the product, rather than leaving it to staff to eyeball.
+    /// This is the actual business rule behind what counts as "near
+    /// expiry" anything due within nearExpiryWarningDays.
+    private func classifyExpiryStatus(expiryDate: Date, asOf now: Date) -> ExpiryStatus {
+        let calendar = Calendar.current
+        let startOfToday = calendar.startOfDay(for: now)
+        let startOfExpiry = calendar.startOfDay(for: expiryDate)
+
+        if startOfExpiry < startOfToday {
+            return .expired
+        }
+
+        let daysUntilExpiry = calendar.dateComponents([.day], from: startOfToday, to: startOfExpiry).day ?? 0
+        return daysUntilExpiry <= nearExpiryWarningDays ? .nearExpiry : .fresh
     }
 
     /// Categories that have not been checked within the overdue window,

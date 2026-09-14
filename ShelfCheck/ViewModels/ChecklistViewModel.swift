@@ -33,10 +33,12 @@ final class ChecklistViewModel: ObservableObject {
         refreshCheckedCategories()
     }
 
-    /// Logs a check for a category. If it is already been checked this
-    /// shift, the Use Case throws instead of silently duplicating it, and
-    /// that message gets surfaced to the person tapping the button.
-    func logCheck(category: ProductCategory, status: ExpiryStatus) {
+    /// Logs a check for a category using the expiry date read off the
+    /// product, the Use Case works out fresh/near expiry/expired from that
+    /// date itself. If the category is already been checked this shift,
+    /// the Use Case throws instead of silently duplicating it, and that
+    /// message gets surfaced to the person tapping the button.
+    func logCheck(category: ProductCategory, expiryDate: Date, itemNote: String) {
         guard let shiftID = session.currentShift?.shiftID,
               let staff = session.currentStaff else { return }
         do {
@@ -44,7 +46,8 @@ final class ChecklistViewModel: ObservableObject {
                 category: category,
                 shiftID: shiftID,
                 checkedBy: staff,
-                expiryStatus: status
+                expiryDate: expiryDate,
+                itemNote: itemNote
             )
             refreshCheckedCategories()
             errorMessage = nil
