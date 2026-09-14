@@ -69,8 +69,7 @@ extension ShiftComplianceStatus {
 
 extension ExpiryCheckRecord {
     /// A short line describing when this item expires, worded differently
-    /// depending on the status, since "expires on X" reads wrong for
-    /// something that's already expired.
+   
     var expiryDateSummary: String {
         let dateText = expiryDate.formatted(date: .abbreviated, time: .omitted)
         switch expiryStatus {
